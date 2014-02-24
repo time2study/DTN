@@ -13,7 +13,7 @@
 #include "dtn.h"
 #include "net/rime.h"
 #include "string.h"
-
+#define DTN_START_CHANNEL 128;
 #define printf2ADDR(addr) printf("%02X:%02X", (addr)->u8[1], (addr)->u8[0])
 
 static void dtn_recv(struct dtn_conn *c, const rimeaddr_t *from){ 
@@ -58,7 +58,7 @@ PROCESS_THREAD(test_dtn_process, ev, data)
   leds_off(LEDS_BLUE | LEDS_GREEN); 
   PROCESS_WAIT_EVENT_UNTIL(ev == sensors_event && data == &button_sensor); 
   set_power(0x1);  
-  dtn_open(&dtn_c,DTN_SPRAY_CHANNEL,&call);
+  dtn_open(&dtn_c,DTN_START_CHANNEL,&call);
   
   while(1) { 
     PROCESS_WAIT_EVENT_UNTIL(ev == sensors_event && data ==   &button_sensor); 
