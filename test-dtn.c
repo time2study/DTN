@@ -14,7 +14,6 @@
 #include "net/rime.h"
 #include "string.h"
 
-#define DTN_START_CHANNEL 128
 #define printf2ADDR(addr) printf("%02X:%02X", (addr)->u8[1], (addr)->u8[0])
 
 static void dtn_recv(struct dtn_conn *c, const rimeaddr_t *from){ 
