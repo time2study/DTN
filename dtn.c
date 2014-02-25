@@ -44,7 +44,7 @@ void period_queue(struct dtn_conn * dtn_c);
 static void send_spray_queue(void *c);
 /*---------------------------------------------------------------------------*/
 int verify_dtn_packet(struct msg_header * hd){
-   return (hd !=NULL && hd->version==DTN_VERSION && hd->magic[0]=='s' && hd->magic[1]=='w');
+   return(hd !=NULL && hd->version==DTN_VERSION && hd->magic[0]=='s' && hd->magic[1]=='w'); 
 }
 /*---------------------------------------------------------------------------*/
 void csvlog_packetbuf(char * type){
@@ -71,13 +71,8 @@ void send_delay(void){
 }
 /*---------------------------------------------------------------------------*/
 void print_message(struct msg_header *hd, char *type){
-  printf("%s, ",type);
-  printf2ADDR(packetbuf_addr(PACKETBUF_ADDR_SENDER));
-  printf(", ");
-  printf2ADDR(packetbuf_addr(PACKETBUF_ADDR_RECEIVER));
   if(verify_dtn_packet(hd)){
-    printf("\n");
-    printf("{message: ver:'%d',id:'%d', L:'%d', src:", hd->version,hd->epacketid, hd->num_copies);
+    printf("{message: ver:'%d',id:'%d',type:'%s' L:'%d', src:", hd->version,hd->epacketid,type,hd->num_copies);
     printf2ADDR(&hd->esender);
     printf(", dst:");
     printf2ADDR(&hd->ereceiver); 
@@ -204,8 +199,8 @@ void dtn_send(struct dtn_conn *dtn_c, const rimeaddr_t *dst){
   struct packetqueue_item *item=NULL;
   struct packetqueue_item *item1=NULL;
   msg_hd.version = DTN_VERSION;
-  msg_hd.magic[0]='S';
-  msg_hd.magic[1]='W';
+  msg_hd.magic[0]='s';
+  msg_hd.magic[1]='w';
   msg_hd.num_copies = DTN_L_COPIES;
   msg_hd.epacketid = dtn_c->seqno;
   rimeaddr_copy(&msg_hd.ereceiver, dst);
