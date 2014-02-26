@@ -44,7 +44,7 @@ void period_queue(struct dtn_conn * dtn_c);
 static void send_spray_queue(void *c);
 /*---------------------------------------------------------------------------*/
 int verify_dtn_packet(struct msg_header * hd){
-   return(hd !=NULL && hd->version==DTN_VERSION && hd->magic[0]=='s' && hd->magic[1]=='w'); 
+   return(hd !=NULL && hd->version==DTN_VERSION && hd->magic[0]=='S' && hd->magic[1]=='W'); 
 }
 /*---------------------------------------------------------------------------*/
 void csvlog_packetbuf(char * type){
@@ -119,14 +119,14 @@ static void send_spray_queue(void *c){
       if(hd->num_copies>=1){
         packetbuf_clear();   
         queuebuf_to_packetbuf(qb);
-        print_message(hd,"SPRAY");
+        //print_message(hd,"SPRAY");
         send_delay();
         CSVLOG_PACKETBUF("spray");
         broadcast_send(&dtn_c->spray_c);
       }
       else{
         printf("Message with copy num 0 doesn't have the authorities to send: ");
-        print_message(hd,"SPARY");
+        //print_message(hd,"SPARY");
       }
     }
   }
@@ -136,7 +136,7 @@ static void send_spray_queue(void *c){
 void dtn_open(struct dtn_conn *dtn_c,uint16_t cno,const struct dtn_callbacks *dtn_cb){
   broadcast_open(&dtn_c->spray_c, cno, &spray_cb);
   unicast_open(&dtn_c->request_c, cno+1, &request_cb);
-  runicast_open(&dtn_c->handoff_c, cno+1, &handoff_cb);
+  runicast_open(&dtn_c->handoff_c, cno+2, &handoff_cb);
   dtn_c->dtn_cb = dtn_cb;
   dtn_c->seqno = 0;
   packetqueue_init(&msg_queue);
@@ -150,7 +150,7 @@ static void recv_spray(struct broadcast_conn *br, const rimeaddr_t *from){
   struct msg_header *hd3;
   struct packetqueue_item *item;
   struct queuebuf *qb;
-  rimeaddr_t sender;
+  static rimeaddr_t sender;
   rimeaddr_copy(&sender, packetbuf_addr(PACKETBUF_ADDR_SENDER));
   if(verify_dtn_packet(hd2)){
     item=find_item(hd2);
@@ -171,15 +171,15 @@ static void recv_spray(struct broadcast_conn *br, const rimeaddr_t *from){
       if ((item== NULL)) {
         printf("===RECEIVE SPRAY===\n");
         printf("L num of the sender's message: %d\n", hd2->num_copies);
-	      hd2->num_copies = 0;
-        print_message(hd2,"REQUEST");
+        hd2->num_copies = 0;
+        //print_message(hd2,"SPRAY");
         if(packetqueue_len(&msg_queue)<5){
           packetqueue_enqueue_packetbuf(&msg_queue,DTN_MAX_LIFETIME,c);
           printf("SPRAY QUEUED\n");
-          if(hd2->num_copies>1){
+          if(hd2->num_copies!=1){
             send_delay();
             CSVLOG_PACKETBUF("request");
-            unicast_send(&c->request_c, &sender);
+            unicast_send(&(c->request_c), &sender);
             printf("SEND OUT REQUEST\n");
           }
         }
@@ -199,8 +199,8 @@ void dtn_send(struct dtn_conn *dtn_c, const rimeaddr_t *dst){
   struct packetqueue_item *item=NULL;
   struct packetqueue_item *item1=NULL;
   msg_hd.version = DTN_VERSION;
-  msg_hd.magic[0]='s';
-  msg_hd.magic[1]='w';
+  msg_hd.magic[0]='S';
+  msg_hd.magic[1]='W';
   msg_hd.num_copies = DTN_L_COPIES;
   msg_hd.epacketid = dtn_c->seqno;
   rimeaddr_copy(&msg_hd.ereceiver, dst);
@@ -220,7 +220,7 @@ void dtn_send(struct dtn_conn *dtn_c, const rimeaddr_t *dst){
   queuebuf_to_packetbuf(qb);
   printf("++++++++++++++++++++++++++++++\n");
   printf("Generate && broadcast my own message!\n");
-  print_message(packetbuf_dataptr(),"SPRAY");
+  //print_message(packetbuf_dataptr(),"SPRAY");
   send_delay();
   CSVLOG_PACKETBUF("spray");
   broadcast_send(&(dtn_c->spray_c));
@@ -231,7 +231,7 @@ static void recv_request_reply(struct unicast_conn *uni, const rimeaddr_t *from)
   struct msg_header *hd2=(struct msg_header *)packetbuf_dataptr();
   struct msg_header *hd3;
   struct queuebuf *qb;
-  rimeaddr_t sender;
+  static rimeaddr_t sender;
   rimeaddr_copy(&sender, packetbuf_addr(PACKETBUF_ADDR_SENDER));
   struct dtn_conn *c = (struct dtn_conn *) ((char *) uni - offsetof(struct dtn_conn, request_c));
   struct packetqueue_item *item;
@@ -247,7 +247,7 @@ static void recv_request_reply(struct unicast_conn *uni, const rimeaddr_t *from)
       printf("\n");
       hd3->num_copies=0;
       queuebuf_to_packetbuf(qb);
-      print_message(hd3,"REPLY");
+      //print_message(hd3,"REPLY");
     }
     else if(hd3->num_copies>1){
       printf("Handoff start, send copy num to: ");
@@ -261,7 +261,7 @@ static void recv_request_reply(struct unicast_conn *uni, const rimeaddr_t *from)
       if(runicast_send(&c->handoff_c,&sender,DTN_RTX) != 0) {
          hd3->num_copies=hd3->num_copies/2;
          printf("Handoff successes, changed message: \n");
-         print_message(hd3,"HANDOFF");  
+         //print_message(hd3,"HANDOFF");  
       }
       else
         printf("HANDOFF FAILED!\n");
@@ -275,7 +275,7 @@ static void recv_handoff(struct runicast_conn *runi, const rimeaddr_t *from, uin
   struct msg_header *hd3;
   struct packetqueue_item *item;
   struct queuebuf *pb;
-  rimeaddr_t sender;
+  static rimeaddr_t sender;
   rimeaddr_copy(&sender, packetbuf_addr(PACKETBUF_ADDR_SENDER));
   item=find_item(hd2);
   if(item!=NULL){    
@@ -289,7 +289,7 @@ static void recv_handoff(struct runicast_conn *runi, const rimeaddr_t *from, uin
     printf2ADDR(&sender);
     printf("\nReceived the copy num! Handoff successes!\n");
     CSVLOG_PACKETBUF("handoff");
-    print_message(hd3,"HANDOFF");
+    //print_message(hd3,"HANDOFF");
   }
   printf("===END HANDOFF===\n");
 }
