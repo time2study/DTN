@@ -6,7 +6,7 @@
  * \file
  *         the DTN routing protocol
  * \author
- *         Minmin Zhang <amy120728@gmail.com>
+ *         Minmin Zhang <ucabmzh@ucl.ac.uk>
  */
 
 #include "contiki.h" 
