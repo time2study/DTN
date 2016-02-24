@@ -26,7 +26,7 @@
  * \file
  *         Header file for dtn protocol 
  * \author
- *         Minmin Zhang <amy120728@gmail.com>
+ *         Minmin Zhang <ucabmzh@ucl.ac.uk>
  */
 
 #ifndef __DTN_H__
