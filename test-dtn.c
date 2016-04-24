@@ -3,7 +3,7 @@
  * \brief
  *     An test of using the Delay-Tolerant Networking module
  * \author
- *     Minmin Zhang <amy120728@gmail.com>
+ *     Minmin Zhang <ucabmzh@ucl.ac.uk>
  */
 #include "stdio.h"
 #include "contiki.h"
