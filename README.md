@@ -1,4 +1,4 @@
 DTN
 ===
 
-delay-tolerant networking protocol based on the Contiki
+develop delay-tolerant networking protocol based on the Contiki
